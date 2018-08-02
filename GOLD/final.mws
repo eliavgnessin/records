@@ -1,0 +1,259 @@
+{VERSION 2 3 "IBM INTEL NT" "2.3" }
+{USTYLETAB {CSTYLE "Maple Input" -1 0 "Courier" 0 1 255 0 0 1 0 1 0 0 
+1 0 0 0 0 }{CSTYLE "2D Math" -1 2 "Times" 0 1 0 0 0 0 0 0 2 0 0 0 0 0 
+0 }{CSTYLE "2D Output" 2 20 "" 0 1 0 0 255 1 0 0 0 0 0 0 0 0 0 }
+{PSTYLE "Normal" -1 0 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 
+0 0 }0 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }{PSTYLE "Heading 1" 0 3 1 
+{CSTYLE "" -1 -1 "" 1 18 0 0 0 0 0 1 0 0 0 0 0 0 0 }1 0 0 0 6 6 0 0 0 
+0 0 0 -1 0 }{PSTYLE "Maple Output" 0 11 1 {CSTYLE "" -1 -1 "" 0 1 32 
+116 104 0 0 0 0 0 0 0 0 0 0 }3 3 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }{PSTYLE 
+"Maple Plot" 0 13 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
+}3 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }}
+{SECT 0 {SECT 0 {PARA 3 "" 0 "" {TEXT -1 96 "Calculate the Intermidiat
+e errors and Show a graph of the errors vs changes in a free parameter
+." }}{EXCHG {PARA 0 "" 0 "" {TEXT -1 12 "Date: 1/5/02" }}{PARA 0 "" 0 
+"" {TEXT -1 11 "written by:" }}{PARA 0 "" 0 "" {TEXT -1 14 "yaron goro
+vitz" }}{PARA 0 "" 0 "" {TEXT -1 15 "Eliav Gnessin\n\n" }}{PARA 0 "" 
+0 "" {TEXT -1 173 "This program calculates the intermidiate error duri
+ng Goldschmit's algorithm and presents a graph of the error relative t
+o a free parameter according to the user's selection" }}{PARA 0 "" 0 "
+" {TEXT -1 0 "" }}{PARA 0 "> " 0 "" {MPLTEXT 1 0 10322 "# Starting pro
+gram\nrestart:\n\n# Map the free parameter cases - these parameters ar
+e used for lamda function to find the\n# right parameter to use accord
+ing to the input\n\nN_case:=1:\nF_case:=3:\nD_case:=2:\ne0_case:=0:\nM
+ultiplier_case:=4:\n\nni_err_case:=0:\ndi_err_case:=1:\nfi_err_case:=2
+:\n\n# Open the data file and read data\nfd:=fopen(`c:/input.txt`,READ
+):\nFile_Data:=readdata(fd,[integer,float,float,integer,integer,intege
+r,integer,integer,integer,integer,integer,integer,integer,integer,inte
+ger,integer,integer,integer]):\nfclose(fd):\n\n# Initialize data param
+eters\n\n# Maple precision for the calculation\nMaple_Precision:=File_
+Data[1,1]: \n\n# A,B input - it is used only if we are calculating the
+ first 2iterations with A and B\nA:=File_Data[1,2]:B:=File_Data[1,3]:
+\n\n# Multipleir precision\nMultiplier_Precision:=File_Data[1,4]:\n \n
+# N  register precision input\nN_Precision:=File_Data[1,5]: # N  regis
+ter precision input\n\n# F register precision input\nF_Precision:=File
+_Data[1,6]:\n\n# D register precision input\nD_Precision:=File_Data[1,
+7]:\n\n# initial guess precision\ne0_error:=File_Data[1,8]:\n\n# round
+ing mode - 0:no assumptions,1:di assumption,2:strict rounding\nSD_Mode
+:=File_Data[1,9]:\n\n# do we use twos_complement - 1:YES,2:No \ntwos_c
+omplement:=File_Data[1,10]:\n\n# number of iterations\nNumber_of_Itera
+tions:=File_Data[1,11]-1: # becuase we have iteration 0\n\n# The param
+eter that we what as the y axis the input is according to the map para
+meters\nGraph_error_presentation:=File_Data[1,12]:\n\n# The parameter \+
+that we what as the x axis the input is according to the map parameter
+s\nGraph_free_parameter:=File_Data[1,13]:\n\n\n# the minimum parameter
+ range for the graph calculation\nMin_parameter_range:=File_Data[1,14]
+:\n\n# the maximum parameter range for the graph calculation\nMax_para
+meter_range:=File_Data[1,15]:\n\n# the iteration that we want to see i
+n the graph\nGraph_iteration:=File_Data[1,16]-1: # becuase we have ite
+ration 0\n\n# the Multiplier representation 0-binary non redundent, 1-
+carry save\nMultiplier_representation:=File_Data[1,17]:\n\n# a flag wh
+ether N and D precision are identical\nAre_D_N_Identical:=File_Data[1,
+18]:\n\n\nnumber_of_points_in_graph:=Max_parameter_range-Min_parameter
+_range:\n\n# Set maple precision\nDigits:=Maple_Precision:\n\n# Build \+
+the lamda procedure. this procedure is used to find the parameters tha
+t we what to use # in the graph\nlamda:= proc (y)\nif y=0 then 1; else
+ 0; fi; end:\n\n# Main loop\nfor counter from Min_parameter_range by 1
+ to Max_parameter_range do\n\n# Set the parameters according to the gr
+aph free parameter  \n\ncount:=counter-Min_parameter_range:\n\n# Set t
+he initial error\n                                                    \+
+                     e0[count]:=2^(-e0_error)*(1-lamda(Graph_free_para
+meter-e0_case))+2^(-counter)*lamda(Graph_free_parameter-e0_case):\n\n#
+ Prepare parameters to calculate exact errors\n\n\nN_err[count]:=2^(-N
+_Precision)*(1-lamda(Graph_free_parameter-N_case))+2^(-counter)*lamda(
+Graph_free_parameter-N_case):\n\n\n# Deal with the case that N precisi
+on and D precision are identical and we select D as the\n# free parame
+ter\nif Are_D_N_Identical=1 and lamda(Graph_free_parameter-D_case)=1 t
+hen\nN_err[count]:=2^(-counter):\nfi:\n\n# Deal with the case the D pr
+ecision and N precision are the same \nif Are_D_N_Identical=0 then\nD_
+err[count]:=2^(-D_Precision)*(1-lamda(Graph_free_parameter-D_case))+2^
+(-counter)*lamda(Graph_free_parameter-D_case):\nelse\nD_err[count]:=N_
+err[count]:\nfi:\n\nF_err[count]:=2^(-F_Precision)*(1-lamda(Graph_free
+_parameter-F_case))+2^(-counter)*lamda(Graph_free_parameter-F_case):\n
+\nMul_err[count]:=2^(-Multiplier_Precision)*(1-lamda(Graph_free_parame
+ter-Multiplier_case))+2^(-counter)*lamda(Graph_free_parameter-Multipli
+er_case):\n\n\n# Calculate the exact errors\n\n# Errors while passing \+
+the multipleir once\nnepsi[count]:=max(N_err[count],((2+Multiplier_rep
+resentation)*Mul_err[count])):\ndepsi[count]:=max(D_err[count],(1+Mult
+iplier_representation)*Mul_err[count]):                               \+
+                                     fepsi[count]:=(1-twos_complement)
+*F_err[count]+2*F_err[count]:\n\n# Errors while passing the multipleir
+ twice\nnepsi_double[count]:=min(N_err[count],((1+Multiplier_represent
+ation)*Mul_err[count])):\ndepsi_double[count]:=min(D_err[count],(1+Mul
+tiplier_representation)*Mul_err[count]):                              \+
+                                        fepsi_double[count]:=(1-twos_c
+omplement)*min(D_err[count],Mul_err[count])+2*min(D_err[count],Mul_err
+[count]):\n                                                           \+
+ \nif Number_of_Iterations=0 then \n  nepsi[count]:=nepsi_double[count
+]:\n  depsi[count]:=depsi_double[count]:\n  fepsi[count]:=fepsi_double
+[count]:\nfi: \n\n# Calculate the first iteration errors.\nni[0]:=2*ne
+psi[count]/(1-e0[count]):\ndi[0]:=depsi[count]/(1-e0[count]):\nffi[0]:
+=fepsi[count]/(1-(abs(e0[count])+3*di[0]/2)):\n\n\nif Number_of_Iterat
+ions=1 then \n  nepsi[count]:=nepsi_double[count]:\n  depsi[count]:=de
+psi_double[count]:\n  fepsi[count]:=fepsi_double[count]:\nfi:\n\n# Cal
+culate the second iteration error.\nni[1]:=2*nepsi[count]/((1-e0[count
+])*(1-ni[0])*(1-(abs(e0[count])+3*di[0]/2)-ffi[0])):\ndi[1]:=depsi[cou
+nt]/((1-(abs(e0[count])+3*di[0]/2)-ffi[0])*(1-(abs(e0[count])+3*di[0]/
+2))):\n\n# calculate ffi_error according to the sd assumptions\n\nif S
+D_Mode=0 then\nffi[1]:=fepsi[count]/(2-(1+di[1])*(1+(abs(e0[count])+3*
+di[0]/2)-ffi[0])*(1+(abs(e0[count])+3*di[0]/2))):\nfi:\nif SD_Mode=1 t
+hen\nffi[1]:=fepsi[count]/(1-((abs(e0[count])+3*di[0]/2)^2+ffi[0])):\n
+fi:\nif SD_Mode=2 then\nffi[1]:=fepsi[count]:\nfi:\n#\n#\n#\n#\n#\n# C
+alculate the errors with strict rounding assumption\n\nif SD_Mode=2 th
+en \nfor i from 2 by 1 to Number_of_Iterations do\n\n# Calculate Delat
+a1\n                                                                  \+
+                                        Delta1[0]:=(abs(e0[count])+3*d
+i[0]/2):\nfor kk from 1 by 1 to i-1 do                                \+
+                                                                     D
+elta1[kk]:=Delta1[kk-1]^2+ffi[kk-1]; od;\n\n# Calculate PI\n          \+
+                                                                      \+
+                                   final_product[-1]:=1;\nfor k from 0
+ by 1 to i-2 do                                                       \+
+       final_product[k]:=final_product[k-1]*(1-ni[k])/(1+di[k]);\nod;
+\nPiFunction[i-1]:=1-(1-ni[i-1])*final_product[i-2];\n\n# Change the p
+recision for the last iteration\n\nif i=Number_of_Iterations then \n  \+
+nepsi[count]:=nepsi_double[count]:\n  depsi[count]:=depsi_double[count
+]:\n  fepsi[count]:=fepsi_double[count]:\nfi: \n\n# Calculate intermed
+iate errors\n                                                         \+
+                                                  ni[i]:=2*nepsi[count
+]/(1-PiFunction[i-1]-Delta1[i-1]);                               di[i]
+:=depsi[count]/(1-Delta1[i-1]);\nffi[i]:=fepsi[count];\nod:\nfi:\n\n# \+
+Calculate the errors with di assumption\n\nif SD_Mode=1 then\nfor i fr
+om 2 by 1 to Number_of_Iterations do\n\n# Calculate Delta1\n          \+
+                                                                      \+
+                          Delta1[0]:=(abs(e0[count])+3*di[0]/2):      \+
+                                                     for kk from 1 by \+
+1 to i-1 do                                                           \+
+                                          Delta1[kk]:=Delta1[kk-1]^2+f
+fi[kk-1];\nod;\n\n# Calculate PI\n                                    \+
+                                                                      \+
+         final_product[-1]:=1;\nfor k from 0 by 1 to i-2 do           \+
+                                                   final_product[k]:=f
+inal_product[k-1]*(1-ni[k])/(1+di[k]);\nod:\nPiFunction[i-1]:=1-(1-ni[
+i-1])*final_product[i-2];\n\n# Change the precision for the last itera
+tion\nif i=Number_of_Iterations then \n  nepsi[count]:=nepsi_double[co
+unt]:\n  depsi[count]:=depsi_double[count]:\n  fepsi[count]:=fepsi_dou
+ble[count]:\nfi:                                  \n\n# Calculate inte
+rmediate errors\n                                                     \+
+                                                           ni[i]:=2*ne
+psi[count]/((1-PiFunction[i-1]-Delta1[i-1])*(1-ffi[i-1])*(1-Delta1[i-1
+]));                               di[i]:=depsi[count]/((1-Delta1[i-1]
+)*(1-ffi[i-1])*(1-Delta1[i-1]));                                      \+
+             ffi[i]:=fepsi[count]/((1-ffi[i-1])*(1-Delta1[i-1]));     \+
+                                                                      \+
+   od:\nfi;\n\n# Calculate the errors without assumptions\n\nif SD_Mod
+e=0 then\nfor i from 2 by 1 to Number_of_Iterations do\n\n# Calculate \+
+P\n                                                                   \+
+                                       P[i-1]:=max(ffi[i-2],di[i-1]);
+\n\n# Calculate Delta1\n\nDelta1[0]:=max(abs(e0[count]),di[0]);       \+
+                                                    for kk from 1 by 1
+ to i-1 do                                                            \+
+                                         Delta1[kk]:=Delta1[kk-1]^2+P[
+kk];\nod;\n\n# Calculate PI\n                                         \+
+                                                                      \+
+    final_product[-1]:=1; \nfor k from 0 by 1 to i-2 do               \+
+                                               final_product[k]:=final
+_product[k-1]*(1-ni[k])/(1+di[k]);\nod;\nPiFunction[i-1]:=1-final_prod
+uct[i-2];\n\n# Calculate m\n                                          \+
+                                                                      \+
+m[i-1]:=ffi[i-2]+ni[i-1];\nDeltarnd[i-1]:=PiFunction[i-1]+Delta1[i-2]^
+2+m[i-1];\n\n# Change the precision for the last iteration\nif i=Numbe
+r_of_Iterations then \n  nepsi[count]:=nepsi_double[count]:\n  depsi[c
+ount]:=depsi_double[count]:\n  fepsi[count]:=fepsi_double[count]:\nfi:
+\n\n# Calculate intermidiate errors\n   \nni[i]:=2*nepsi[count]/((1-De
+ltarnd[i-1])*(1-ffi[i-1])*(1-P[i-1]));                               d
+i[i]:=depsi[count]/((1-Delta1[i-1])*(1-ffi[i-1])*(1-P[i-1]));         \+
+                                          P[i]:=max(ffi[i-1],di[i]);\n
+ffi[i]:=fepsi[count]/(1-P[i]);           \nod:                        \+
+                                                               \nfi:\n
+\n# Save all the intermediate errors for this count\n\nfor i from 0 to
+ Number_of_Iterations do   \nni_err[count,i]:=ni[i]:\ndi_err[count,i]:
+=di[i]:   \nfi_err[count,i]:=ffi[i]:  \nod:\nod:\n# End of errors calc
+ulation\n" }}}}{SECT 0 {PARA 3 "" 0 "" {TEXT -1 79 "Plot the graph of \+
+the desired error and free parameter. The values are in bits." }}
+{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 1820 "# identify the parameters \+
+for the graph\nError_value:=`ni_err`*lamda(Graph_error_presentation-ni
+_err_case)+`di_err`*lamda(Graph_error_presentation-di_err_case)+`fi_er
+r`*lamda(Graph_error_presentation-fi_err_case):\nParameter_value:=`e0`
+*lamda(Graph_free_parameter-e0_case)+`N_err`*lamda(Graph_free_paramete
+r-N_case)+`D_err`*lamda(Graph_free_parameter-D_case)+`F_err`*lamda(Gra
+ph_free_parameter-F_case)+`Mul_err`*lamda(Graph_free_parameter-Multipl
+ier_case):\n\n# find and min and max of the values to create the best \+
+graph\n\ntemp_value[-1]:=ni_err[0,Graph_iteration]*lamda(Graph_error_p
+resentation-ni_err_case)+di_err[0,Graph_iteration]*lamda(Graph_error_p
+resentation-di_err_case)+fi_err[0,Graph_iteration]*lamda(Graph_error_p
+resentation-fi_err_case):\nY_min:=temp_value[-1]:\nY_max:=temp_value[-
+1]:\nfor i from 0 by 1 to number_of_points_in_graph do\ntemp_value[i]:
+=ni_err[i,Graph_iteration]*lamda(Graph_error_presentation-ni_err_case)
++di_err[i,Graph_iteration]*lamda(Graph_error_presentation-di_err_case)
++fi_err[i,Graph_iteration]*lamda(Graph_error_presentation-fi_err_case)
+:\nif temp_value[i]>=temp_value[i-1] then\nY_min:=evalf(-log[2](temp_v
+alue[i]));\nelse\nY_max:=evalf(-log[2](temp_value[i]));\nfi;\nod:\nX_m
+in:=Min_parameter_range:\nX_max:=Max_parameter_range:\n\n# Generate gr
+aph\n\nwith(plots, listplot, listplot3d, pointplot, pointplot3d):\npoi
+ntplot(\{seq([Min_parameter_range+h,-log[2]((ni_err[h,Graph_iteration]
+*lamda(Graph_error_presentation-ni_err_case)+di_err[h,Graph_iteration]
+*lamda(Graph_error_presentation-di_err_case)+fi_err[h,Graph_iteration]
+*lamda(Graph_error_presentation-fi_err_case)))], h=0..number_of_points
+_in_graph)\},labels=[Parameter_value,Error_value],title=`Intermeidate \+
+error VS. precision parameter (in bits)`);\n\n\n# optional to use full
+ scale of graph view=[0.9*X_min..1.1*X_max,0.999*Y_min..1.0001*Y_max]
+\n#\n" }}{PARA 0 "" 0 "" {TEXT -1 0 "" }}{PARA 0 "" 0 "" {TEXT -1 0 "
+" }}{PARA 0 "" 0 "" {TEXT -1 0 "" }}{PARA 0 "" 0 "" {TEXT -1 0 "" }}
+{PARA 0 "" 0 "" {TEXT -1 0 "" }}{PARA 13 "" 1 "" {INLPLOT "6%-%'POINTS
+G6/7$$\"#h\"\"!$\"?=jaa?3\\t`R*******>'!#G7$$\"#iF)$\"?;Y*Q\\;\"\\t`R*
+******>'F,7$$\"#jF)$\"?ZjG_u7\\t`R*******>'F,7$$\"#kF)$\"?YjG_u7\\t`R*
+******H'F,7$$\"#gF)$\"?>(\\e<8!\\t`R*******>'F,7$$\"#eF)$\"?O,n.**f[t`
+R*******>'F,7$$\"#fF)$\"?DlX=a()[t`R*******>'F,7$$\"#qF)$\"?ZjG_u7\\t`
+R********oF,7$$\"#pF)$\"?YjG_u7\\t`R*******z'F,7$$\"#lF)$\"?ZjG_u7\\t`
+R*******R'F,7$$\"#mF)$\"?ZjG_u7\\t`R*******\\'F,7$$\"#nF)$\"?ZjG_u7\\t
+`R*******f'F,7$$\"#oF)$\"?ZjG_u7\\t`R*******p'F,-%+AXESLABELSG6$%&N_er
+rG%'ni_errG-%&TITLEG6#%UIntermeidate~error~VS.~precision~parameter~(in
+~bits)G" 2 972 572 572 2 0 1 0 2 9 0 4 2 1.000000 45.000000 45.000000 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 26478 8293 0 0 0 0 0 1 }}}
+}{SECT 0 {PARA 3 "" 0 "" {TEXT -1 55 "Print the values of the graph - \+
+The values are in bits." }}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 393 "
+# Print the values of the graph plot\n\nfor h from 0 by 1 to number_of
+_points_in_graph do\nError_value[h],Graph_iteration+1=evalf(-log[2](ni
+_err[h,Graph_iteration]*lamda(Graph_error_presentation-ni_err_case)+di
+_err[h,Graph_iteration]*lamda(Graph_error_presentation-di_err_case)+fi
+_err[h,Graph_iteration]*lamda(Graph_error_presentation-fi_err_case)));
+\nParameter_value, h=Min_parameter_range+h;\nod;" }}{PARA 0 "> " 0 "" 
+{MPLTEXT 1 0 0 "" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG6#\"\"!/
+\"\"&$\"?O,n.**f[t`R*******>'!#G" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$%&
+N_errG/\"\"!\"#e" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG6#\"\"\"
+/\"\"&$\"?DlX=a()[t`R*******>'!#G" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$%
+&N_errG/\"\"\"\"#f" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG6#\"\"
+#/\"\"&$\"?>(\\e<8!\\t`R*******>'!#G" }}{PARA 11 "" 1 "" {XPPMATH 20 "
+6$%&N_errG/\"\"#\"#g" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG6#\"
+\"$/\"\"&$\"?=jaa?3\\t`R*******>'!#G" }}{PARA 11 "" 1 "" {XPPMATH 20 "
+6$%&N_errG/\"\"$\"#h" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG6#\"
+\"%/\"\"&$\"?;Y*Q\\;\"\\t`R*******>'!#G" }}{PARA 11 "" 1 "" {XPPMATH 
+20 "6$%&N_errG/\"\"%\"#i" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG
+6#\"\"&/F&$\"?ZjG_u7\\t`R*******>'!#G" }}{PARA 11 "" 1 "" {XPPMATH 20 
+"6$%&N_errG/\"\"&\"#j" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG6#
+\"\"'/\"\"&$\"?YjG_u7\\t`R*******H'!#G" }}{PARA 11 "" 1 "" {XPPMATH 
+20 "6$%&N_errG/\"\"'\"#k" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG
+6#\"\"(/\"\"&$\"?ZjG_u7\\t`R*******R'!#G" }}{PARA 11 "" 1 "" {XPPMATH 
+20 "6$%&N_errG/\"\"(\"#l" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%'ni_errG
+6#\"\")/\"\"&$\"?ZjG_u7\\t`R*******\\'!#G" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6$%&N_errG/\"\")\"#m" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&
+%'ni_errG6#\"\"*/\"\"&$\"?ZjG_u7\\t`R*******f'!#G" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6$%&N_errG/\"\"*\"#n" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&
+%'ni_errG6#\"#5/\"\"&$\"?ZjG_u7\\t`R*******p'!#G" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6$%&N_errG/\"#5\"#o" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%
+'ni_errG6#\"#6/\"\"&$\"?YjG_u7\\t`R*******z'!#G" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6$%&N_errG/\"#6\"#p" }}{PARA 11 "" 1 "" {XPPMATH 20 "6$&%
+'ni_errG6#\"#7/\"\"&$\"?ZjG_u7\\t`R********o!#G" }}{PARA 11 "" 1 "" 
+{XPPMATH 20 "6$%&N_errG/\"#7\"#q" }}}}{PARA 3 "" 0 "" {TEXT -1 0 "" }}
+{SECT 0 {PARA 3 "" 0 "" {TEXT -1 91 "Simulate Goldschmidts algorithm w
+ith the bounded errors ( without rounding  considerations)" }}{PARA 0 
+"" 0 "" {TEXT -1 0 "" }}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 295 "cou
+nt:=0:\nNN[-1]:=A:\nDD[-1]:=B:\nFF[-1]:=(1-e0[count])/B:\nfor i from 0
+ by 1 to Number_of_Iterations do\nNN[i]:=(1-ni_err[count,i])*NN[i-1]*F
+F[i-1]:\nDD[i]:=(1+di_err[count,i])*DD[i-1]*FF[i-1]:\nFF[i]:=(1-fi_err
+[count,i])*(2-DD[i]):\nod:\n# Print the value of the result\n'A/B'=NN[
+Number_of_Iterations];" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#/*&%\"AG\"\"
+\"%\"BG!\"\"$\"??p\"QXYh/3:I*******\\!#I" }}}{EXCHG {PARA 0 "> " 0 "" 
+{MPLTEXT 1 0 0 "" }}}}}{MARK "0 1 6 0" 3048 }{VIEWOPTS 1 1 0 1 1 1803 
+}

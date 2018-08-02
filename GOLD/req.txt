@@ -1,0 +1,7 @@
+System requirements
+
+IBM-PC or compatible
+Microsoft Windows 95/98/ME/NT/2000/XP
+Maple version 5 or higher installed
+7 MB of free disk space
+
